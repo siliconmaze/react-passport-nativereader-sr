@@ -1,0 +1,27 @@
+{
+  "deprecated": false,
+  "description": "read the NFC chip in a passport using MLKit & JTMRD",
+  "keywords": [
+    "react-native",
+    "react-component",
+    "nfc",
+    "android",
+    "scanner"
+  ],
+  "license": "Apache-2.0",
+  "main": "index.android.js",
+  "name": "react-native-passport-reader-sr",
+  "version": "0.1.0",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/siliconmaze/react-passport-nativereader-sr.git"
+  },
+  "author": "Steve Robinson",
+  "bugs": {
+    "url": "https://github.com/siliconmaze/react-passport-nativereader-sr/issues"
+  },
+  "homepage": "https://github.com/siliconmaze/react-passport-nativereader-sr#readme"
+}
