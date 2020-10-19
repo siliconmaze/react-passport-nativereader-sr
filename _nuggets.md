@@ -1,5 +1,7 @@
 # Nuggets
 
+Please read through, it is a guide for myself, and may provide useful. Please read it and don't just follow step by step as your requirement may be slightly different when you try.
+
 Once I had placed my code, I ran `npm init` in this repo to create the `package.json`
 
 ## NPM Install
@@ -81,7 +83,7 @@ I can now update my packagejson to be:
 `"react-native-passport-reader-sr": "file:/Users/stever/local-repos/github/react-passport-nativereader-sr",` instead of
 `"react-native-passport-reader": "^1.0.3",`
 
-Then i can test my making a change to my test project
+Then I can test my making a change to my test project
 
 Change my react-native code entries where `import PassportReader from 'react-native-passport-reader';` should now be `import PassportReader from 'react-native-passport-reader-sr';`
 
@@ -104,14 +106,19 @@ cd /Users/stever/local-repos/codecommit/retail-age-verification/src/FujitsuVerif
 ln -s /Users/stever/local-repos/github/react-passport-nativereader-sr
 ```
 
-
 We then see the following symlink has relative folder
 
 ```s
 react-passport-native-reader-sr -> /Users/stever/local-repos/github/react-passport-nativereader-sr
 ```
 
-This woul dnot work in react-native, I woul dget unable to resolve module, so I decided to reference the live github repo
+This would not work in react-native! I would keep getting `unable to resolve module react-passport-nativereader-sr`, so I decided to reference the live github repo as per below
+
+I changed my project `package.json` to 
+
+`"react-native-passport-reader-sr": "github:siliconmaze/react-passport-nativereader-sr",`
+
+After that, everything was fine!
 
 ## References
 Links which I personally read to give some ideas
