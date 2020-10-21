@@ -365,6 +365,9 @@ public class RNPassportReaderModule extends ReactContextBaseJavaModule implement
           Log.w(TAG, e);
         }*/
 
+
+        
+
         try {
           CardSecurityFile cardSecurityFile = new CardSecurityFile(service.getInputStream(PassportService.EF_CARD_SECURITY));
           Collection<SecurityInfo> securityInfoCollection = cardSecurityFile.getSecurityInfos();
@@ -373,9 +376,9 @@ public class RNPassportReaderModule extends ReactContextBaseJavaModule implement
                   PACEInfo paceInfo = (PACEInfo) securityInfo;
                   service.doPACE(bacKey, paceInfo.getObjectIdentifier(), PACEInfo.toParameterSpec(paceInfo.getParameterId()), null);
                   paceSucceeded = true;
-              } else {
-                  paceSucceeded = true;
-              }
+              } //else {
+                  //paceSucceeded = true;
+              //}
           }
         } catch (Exception e) {
           Log.i(TAG,"catch cardSecurityFile:");
