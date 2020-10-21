@@ -133,6 +133,29 @@ public class RNPassportReaderModule extends ReactContextBaseJavaModule implement
   public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
   }
 
+
+  @Override
+    public void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(intent.getAction())) {
+            Tag tag = intent.getExtras().getParcelable(NfcAdapter.EXTRA_TAG);
+            if (Arrays.asList(tag.getTechList()).contains("android.nfc.tech.IsoDep")) {
+                clearViews();
+                if (passportNumber != null && !passportNumber.isEmpty()
+                        && expirationDate != null && !expirationDate.isEmpty()
+                        && birthDate != null && !birthDate.isEmpty()) {
+                    BACKeySpec bacKey = new BACKey(passportNumber, birthDate, expirationDate);
+                    new ReadTask(IsoDep.get(tag), bacKey).execute();
+                    mainLayout.setVisibility(View.GONE);
+                    imageLayout.setVisibility(View.GONE);
+                    loadingLayout.setVisibility(View.VISIBLE);
+                } else {
+                    Snackbar.make(loadingLayout, R.string.error_input, Snackbar.LENGTH_SHORT).show();
+                }
+            }
+        }
+    }
+
   @Override
   public void onNewIntent(Intent intent) {
     Log.i(TAG,"ENTER: onNewIntent");
@@ -141,8 +164,9 @@ public class RNPassportReaderModule extends ReactContextBaseJavaModule implement
 
     Tag tag = intent.getExtras().getParcelable(NfcAdapter.EXTRA_TAG);
     Log.i(TAG,"tag="+tag);
-
-    if (!Arrays.asList(tag.getTechList()).contains(IsoDep.class.getName())) return;
+    Log.i(TAG,"IsoDep.class.getName()"+IsoDep.class.getName());
+    //if (!Arrays.asList(tag.getTechList()).contains(IsoDep.class.getName())) return;
+    if (!Arrays.asList(tag.getTechList()).contains("android.nfc.tech.IsoDep")) return;
 
     BACKeySpec bacKey = new BACKey(
             opts.getString(PARAM_DOC_NUM),
