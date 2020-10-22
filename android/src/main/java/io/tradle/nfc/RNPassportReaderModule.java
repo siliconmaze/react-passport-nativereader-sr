@@ -120,9 +120,9 @@ public class RNPassportReaderModule extends ReactContextBaseJavaModule implement
 
   private boolean isOptsValid(ReadableMap opts) {
 
-    Log.i(TAG,"PARAM_DOC_NUM="+opts.getString(PARAM_DOC_NUM));
-    Log.i(TAG,"PARAM_DOB="+opts.getString(PARAM_DOB));
-    Log.i(TAG,"PARAM_DOE="+opts.getString(PARAM_DOE));
+    Log.d(TAG,"PARAM_DOC_NUM="+opts.getString(PARAM_DOC_NUM));
+    Log.d(TAG,"PARAM_DOB="+opts.getString(PARAM_DOB));
+    Log.d(TAG,"PARAM_DOE="+opts.getString(PARAM_DOE));
 
     return opts.getString(PARAM_DOC_NUM) != null && opts.getString(PARAM_DOC_NUM).length() >= 8 &&
     opts.getString(PARAM_DOB) != null && opts.getString(PARAM_DOB).length() == 6 &&
@@ -133,38 +133,24 @@ public class RNPassportReaderModule extends ReactContextBaseJavaModule implement
   public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
   }
 
-
-  @Override
-    public void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(intent.getAction())) {
-            Tag tag = intent.getExtras().getParcelable(NfcAdapter.EXTRA_TAG);
-            if (Arrays.asList(tag.getTechList()).contains("android.nfc.tech.IsoDep")) {
-                clearViews();
-                if (passportNumber != null && !passportNumber.isEmpty()
-                        && expirationDate != null && !expirationDate.isEmpty()
-                        && birthDate != null && !birthDate.isEmpty()) {
-                    BACKeySpec bacKey = new BACKey(passportNumber, birthDate, expirationDate);
-                    new ReadTask(IsoDep.get(tag), bacKey).execute();
-                    mainLayout.setVisibility(View.GONE);
-                    imageLayout.setVisibility(View.GONE);
-                    loadingLayout.setVisibility(View.VISIBLE);
-                } else {
-                    Snackbar.make(loadingLayout, R.string.error_input, Snackbar.LENGTH_SHORT).show();
-                }
-            }
-        }
-    }
-
   @Override
   public void onNewIntent(Intent intent) {
-    Log.i(TAG,"ENTER: onNewIntent");
-    if (scanPromise == null) return;
-    if (!NfcAdapter.ACTION_TECH_DISCOVERED.equals(intent.getAction())) return;
+    Log.d(TAG,"ENTER: onNewIntent");
+    if (scanPromise == null) {
+      Log.d(TAG,"scanPromise==null");
+      Log.d(TAG,"return from onNewIntent()");
+      return;
+    }
+
+    if (!NfcAdapter.ACTION_TECH_DISCOVERED.equals(intent.getAction())) {
+      Log.d(TAG,"!NfcAdapter.ACTION_TECH_DISCOVERED.equals(intent.getAction())");
+      Log.d(TAG,"return from onNewIntent()");
+      return;
+    }
 
     Tag tag = intent.getExtras().getParcelable(NfcAdapter.EXTRA_TAG);
-    Log.i(TAG,"tag="+tag);
-    Log.i(TAG,"IsoDep.class.getName()"+IsoDep.class.getName());
+    Log.d(TAG,"tag="+tag);
+    Log.d(TAG,"IsoDep.class.getName()="+IsoDep.class.getName());
     //if (!Arrays.asList(tag.getTechList()).contains(IsoDep.class.getName())) return;
     if (!Arrays.asList(tag.getTechList()).contains("android.nfc.tech.IsoDep")) return;
 
@@ -174,7 +160,7 @@ public class RNPassportReaderModule extends ReactContextBaseJavaModule implement
             opts.getString(PARAM_DOE)
     );
 
-    Log.i(TAG,"new ReadTask()");
+    Log.d(TAG,"new ReadTask()");
     new ReadTask(IsoDep.get(tag), bacKey).execute();
   }
 
@@ -203,35 +189,35 @@ public class RNPassportReaderModule extends ReactContextBaseJavaModule implement
 
   @ReactMethod
   public void scan(final ReadableMap opts, final Promise promise) {
-    Log.i(TAG,"scan()");
+    Log.d(TAG,"scan()");
     NfcAdapter mNfcAdapter = null;
     try {
       mNfcAdapter = NfcAdapter.getDefaultAdapter(this.reactContext);
     } catch (Exception e) {
-      Log.i(TAG,"mNfcAdapter");
+      Log.d(TAG,"mNfcAdapter");
       Log.w(TAG, e);
     }
    
     if (mNfcAdapter == null) {
-      Log.i(TAG,"NFC chip reading not supported");
+      Log.d(TAG,"NFC chip reading not supported");
       promise.reject(E_NOT_SUPPORTED, "NFC chip reading not supported!");
       return;
     }
 
     if (!mNfcAdapter.isEnabled()) {
-      Log.i(TAG,"NFC chip reading not enabled");
+      Log.d(TAG,"NFC chip reading not enabled");
       promise.reject(E_NOT_ENABLED, "NFC chip reading not enabled!");
       return;
     }
 
     if (scanPromise != null) {
-      Log.i(TAG,"Already running a scan");
+      Log.d(TAG,"Already running a scan");
       promise.reject(E_ONE_REQ_AT_A_TIME, "Already running a scan!");
       return;
     }
 
     if (!isOptsValid(opts)) {
-      Log.i(TAG,"opts are invalid!");
+      Log.d(TAG,"opts are invalid!");
       promise.reject(E_MRZINFO_INVALID, "MRZ Information is invalid!");
       return;
     }
@@ -349,9 +335,9 @@ public class RNPassportReaderModule extends ReactContextBaseJavaModule implement
 
     @Override
     protected Exception doInBackground(Void... params) {
-      Log.i(TAG,"ENTER: doInBackground()");
+      Log.d(TAG,"ENTER: doInBackground()");
       try {
-        Log.w(TAG,"try doInBackground:");
+        Log.d(TAG,"try doInBackground:");
         CardService cardService = CardService.getInstance(isoDep);
         cardService.open();
 
@@ -391,7 +377,7 @@ public class RNPassportReaderModule extends ReactContextBaseJavaModule implement
 
 
         
-
+        
         try {
           CardSecurityFile cardSecurityFile = new CardSecurityFile(service.getInputStream(PassportService.EF_CARD_SECURITY));
           Collection<SecurityInfo> securityInfoCollection = cardSecurityFile.getSecurityInfos();
@@ -405,20 +391,22 @@ public class RNPassportReaderModule extends ReactContextBaseJavaModule implement
               }
           }
         } catch (Exception e) {
-          Log.i(TAG,"catch cardSecurityFile:");
+          Log.d(TAG,"catch cardSecurityFile:");
           Log.w(TAG, e);
         }
 
 
-        Log.i(TAG,"sendSelectApplet()");
+        Log.d(TAG,"sendSelectApplet()");
         service.sendSelectApplet(paceSucceeded);
       
 
         if (!paceSucceeded) {
           try {
-            Log.i(TAG,"getInputStream()");
+            Log.d(TAG,"getInputStream()");
             service.getInputStream(PassportService.EF_COM).read();
           } catch (Exception e) {
+            Log.w(TAG, e);
+            Log.d(TAG,"service.doBAC(bacKey)");
             service.doBAC(bacKey);
           }
         }
@@ -441,7 +429,7 @@ public class RNPassportReaderModule extends ReactContextBaseJavaModule implement
         */
         CardFileInputStream dg1In = service.getInputStream(PassportService.EF_DG1);
         dg1File = new DG1File(dg1In);
-        Log.i(TAG,"dg1File");
+        Log.d(TAG,"dg1File");
 
         /*
         CardFileInputStream dg2In = service.getInputStream(PassportService.EF_DG2);
@@ -450,7 +438,7 @@ public class RNPassportReaderModule extends ReactContextBaseJavaModule implement
         */
         CardFileInputStream dg2In = service.getInputStream(PassportService.EF_DG2);
         dg2File = new DG2File(dg2In);
-        Log.i(TAG,"dg2File");
+        Log.d(TAG,"dg2File");
 
         List<FaceImageInfo> allFaceImageInfos = new ArrayList<>();
         List<FaceInfo> faceInfos = dg2File.getFaceInfos();
@@ -473,7 +461,7 @@ public class RNPassportReaderModule extends ReactContextBaseJavaModule implement
 
 
       } catch (Exception e) {
-        Log.i(TAG,"catch doInBackground:");
+        Log.d(TAG,"catch doInBackground:");
         Log.w(TAG,"error:" + e);
         return e;
       }
@@ -482,15 +470,15 @@ public class RNPassportReaderModule extends ReactContextBaseJavaModule implement
 
     @Override
     protected void onPostExecute(Exception result) {
-      Log.i(TAG,"ENTER: onPostExecute()");
+      Log.d(TAG,"ENTER: onPostExecute()");
 
       if (scanPromise == null) return;
 
       if (result != null) {
-        Log.i(TAG,"result != null = bad for MRZInfo");
+        Log.d(TAG,"result != null which mean bad MRZInfo");
         Log.w(TAG, exceptionStack(result));
         if (result instanceof IOException) {
-          Log.i(TAG,"IOException: Lost connection to chip on card");
+          Log.w(TAG,"IOException: Lost connection to chip on card");
           Log.w(TAG,"scanPromise.reject = E_SCAN_FAILED_DISCONNECT");
           scanPromise.reject(E_SCAN_FAILED_DISCONNECT, TAG+"::"+"Lost connection to chip on card");
         } else {
@@ -498,14 +486,14 @@ public class RNPassportReaderModule extends ReactContextBaseJavaModule implement
           scanPromise.reject(E_SCAN_FAILED, TAG+"::"+result);
         }
 
-        Log.w(TAG,"resetState()");
+        Log.d(TAG,"resetState()");
         resetState();
         Log.w(TAG,"return()");
         return;
       }
 
-      Log.i(TAG,"result == null = good for MRZInfo");
-      Log.w(TAG,"dg1File.getMRZInfo()");
+      Log.d(TAG,"result == null = good MRZInfo");
+      Log.d(TAG,"dg1File.getMRZInfo()");
       MRZInfo mrzInfo = dg1File.getMRZInfo();
 
       int quality = 100;
@@ -529,9 +517,9 @@ public class RNPassportReaderModule extends ReactContextBaseJavaModule implement
       passport.putString(KEY_GENDER, mrzInfo.getGender().toString());
       passport.putString(KEY_ISSUER, mrzInfo.getIssuingState());
 
-      Log.w(TAG,"scanPromise.resolve");
+      Log.d(TAG,"scanPromise.resolve");
       scanPromise.resolve(passport);
-      Log.w(TAG,"resetState()");
+      Log.d(TAG,"resetState()");
       resetState();
      
     }
